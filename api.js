@@ -19,3 +19,17 @@ export async function getSampleForecast(cityKey) {
   const data = await res.json();
   return data.daily;
 }
+
+export async function getForecast({ lat, lon }) {
+  const url = new URL(BASE);
+  url.searchParams.set("latitude", lat);
+  url.searchParams.set("longitude", lon);
+  url.searchParams.set("daily", "temperature_2m_max,precipitation_probability_max,wind_speed_10m_max");
+  url.searchParams.set("timezone", "Asia/Seoul");
+  url.searchParams.set("forecast_days", 7);
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return data.daily;
+}
