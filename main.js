@@ -84,3 +84,11 @@ form.addEventListener("submit", async (event) => {
   }
   render();
 });
+
+// P5: 기준 칸이 바뀌면 바로 다시 그리기
+for (const input of [rainInput, windInput]) {
+  input.addEventListener("input", () => {
+    state.limits = { rain: Number(rainInput.value), wind: Number(windInput.value) };
+    render();
+  });
+}
