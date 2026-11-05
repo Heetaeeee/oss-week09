@@ -15,8 +15,8 @@
 
 // (맨 위 주석들 그대로)
 
+import { toDays, isGoodDay, summarize, reasons } from "./logic.js";
 import { getForecast } from "./api.js";
-import { toDays, isGoodDay, summarize } from "./logic.js";   // P4: 두 개 추가
 
 // 주어짐: 도시 세 곳의 위도·경도. ...
 const CITIES = {
@@ -47,13 +47,14 @@ function dayRow(day) {
     `${day.max}°`,
     `${day.wind} km/h`,
     `${day.rain}%`,
+    reasons(day, state.limits).join(", "),
   ];
   for (const text of cells) {
     const td = document.createElement("td");
     td.textContent = text;
     tr.append(td);
   }
-  if (isGoodDay(day, state.limits)) tr.classList.add("good");   // P4
+  if (isGoodDay(day, state.limits)) tr.classList.add("good");
   return tr;
 }
 
