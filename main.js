@@ -12,8 +12,11 @@
 
 // 주어짐: 도시 세 곳의 위도·경도. 키는 index.html <select> 의 option value 와 같습니다.
 
-import { getForecast } from "./api.js";
 
+import { getForecast } from "./api.js";
+import { toDays } from "./logic.js";
+
+// 주어짐: 도시 세 곳의 위도·경도. ...
 const CITIES = {
   seoul: { name: "Seoul", lat: 37.566, lon: 126.9784 },
   daejeon: { name: "Daejeon", lat: 36.3504, lon: 127.3845 },
@@ -29,20 +32,46 @@ const statusEl = document.querySelector("#status");
 const summaryEl = document.querySelector("#summary");
 const rowsEl = document.querySelector("#rows");
 
+// ===== P3: 여기부터 새로 추가 =====
+const state = { city: null, days: [] };
+
+function dayRow(day) {
+  const tr = document.createElement("tr");
+  const cells = [
+    day.date.slice(5),
+    `${day.max}°`,
+    `${day.wind} km/h`,
+    `${day.rain}%`,
+  ];
+  for (const text of cells) {
+    const td = document.createElement("td");
+    td.textContent = text;
+    tr.append(td);
+  }
+  return tr;
+}
+
+function render() {
+  rowsEl.replaceChildren(...state.days.map(dayRow));
+}
+// ===== P3 추가 끝 =====
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const city = CITIES[citySelect.value];
 
   statusEl.textContent = "Loading...";
-  statusEl.classList.remove("error");          // 이전 빨간색 지우기
+  statusEl.classList.remove("error");
 
   try {
-    const daily = await getForecast(city);     // 받아오기
-    statusEl.textContent = "";                 // 성공: 상태 줄 비우기
-    console.log(daily);
+    const daily = await getForecast(city);
+    state.city = city;              // P3 추가
+    state.days = toDays(daily);     // P3 추가
+    statusEl.textContent = "";
   } catch (err) {
     statusEl.textContent = `Could not load the forecast (${err.message}).`;
-    statusEl.classList.add("error");           // 실패: 빨간색
+    statusEl.classList.add("error");
   }
+  render();                         // P3 추가 (try/catch 밖)
 });
