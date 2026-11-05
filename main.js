@@ -13,8 +13,10 @@
 // 주어짐: 도시 세 곳의 위도·경도. 키는 index.html <select> 의 option value 와 같습니다.
 
 
+// (맨 위 주석들 그대로)
+
 import { getForecast } from "./api.js";
-import { toDays } from "./logic.js";
+import { toDays, isGoodDay, summarize } from "./logic.js";   // P4: 두 개 추가
 
 // 주어짐: 도시 세 곳의 위도·경도. ...
 const CITIES = {
@@ -32,8 +34,11 @@ const statusEl = document.querySelector("#status");
 const summaryEl = document.querySelector("#summary");
 const rowsEl = document.querySelector("#rows");
 
-// ===== P3: 여기부터 새로 추가 =====
-const state = { city: null, days: [] };
+const state = {
+  city: null,
+  days: [],
+  limits: { rain: Number(rainInput.value), wind: Number(windInput.value) },  // P4
+};
 
 function dayRow(day) {
   const tr = document.createElement("tr");
@@ -48,30 +53,34 @@ function dayRow(day) {
     td.textContent = text;
     tr.append(td);
   }
+  if (isGoodDay(day, state.limits)) tr.classList.add("good");   // P4
   return tr;
 }
 
 function render() {
+  summaryEl.textContent = state.city                             // P4
+    ? `${state.city.name}: ${summarize(state.days, state.limits)}.`
+    : "";
   rowsEl.replaceChildren(...state.days.map(dayRow));
 }
-// ===== P3 추가 끝 =====
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const city = CITIES[citySelect.value];
+  state.limits = { rain: Number(rainInput.value), wind: Number(windInput.value) };  // P4
 
   statusEl.textContent = "Loading...";
   statusEl.classList.remove("error");
 
   try {
     const daily = await getForecast(city);
-    state.city = city;              // P3 추가
-    state.days = toDays(daily);     // P3 추가
+    state.city = city;
+    state.days = toDays(daily);
     statusEl.textContent = "";
   } catch (err) {
     statusEl.textContent = `Could not load the forecast (${err.message}).`;
     statusEl.classList.add("error");
   }
-  render();                         // P3 추가 (try/catch 밖)
+  render();
 });
